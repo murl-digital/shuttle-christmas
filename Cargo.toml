@@ -1,0 +1,11 @@
+[package]
+name = "cch23-drc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.3.1"
+serde = {version = "1.0", features = ["derive"]}
+shuttle-actix-web = "0.34.0"
+shuttle-runtime = "0.34.0"
+tokio = "1.26.0"
