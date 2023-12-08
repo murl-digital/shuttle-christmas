@@ -1,10 +1,12 @@
 use actix_web::{get, web::ServiceConfig, HttpResponse};
 use day1::packet_math;
 use day4::{strength, contest};
+use day6::elf;
 use shuttle_actix_web::ShuttleActixWeb;
 
 mod day1;
 mod day4;
+mod day6;
 
 #[get("/")]
 async fn hello_world() -> &'static str {
@@ -24,6 +26,7 @@ async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clon
         cfg.service(packet_math);
         cfg.service(strength);
         cfg.service(contest);
+        cfg.service(elf);
     };
 
     Ok(config.into())
