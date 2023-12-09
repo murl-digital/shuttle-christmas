@@ -460,12 +460,15 @@ name = "cch23-drc"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "base64",
  "fancy-regex",
  "lazy_static",
  "serde",
+ "serde_json",
  "shuttle-actix-web",
  "shuttle-runtime",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
