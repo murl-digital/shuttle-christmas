@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 struct Reindeer {
-    name: String,
     strength: i32
 }
 

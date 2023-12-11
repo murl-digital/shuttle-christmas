@@ -14,14 +14,14 @@ lazy_static! {
 pub async fn vaporeon_breeding(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> String {
     let mon = rustemon::pokemon::pokemon::get_by_id(*idx, &client).await.unwrap();
 
-    (mon.weight / 10).to_string()
+    (mon.weight as f64 / 10_f64).to_string()
 }
 
 #[get("/8/drop/{idx}")]
 pub async fn vaporeon_splat(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> String {
     let mon = rustemon::pokemon::pokemon::get_by_id(*idx, &client).await.unwrap();
 
-    let weight = (mon.weight / 10) as f64;
+    let weight = mon.weight as f64 / 10_f64;
 
     (*ROOT_2GH * weight).to_string()
 }

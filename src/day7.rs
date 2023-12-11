@@ -4,16 +4,16 @@ use actix_web::{get, HttpRequest, web};
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct RecipeInput {
-    recipe: HashMap<String, i32>,
-    pantry: HashMap<String, i32>
+    recipe: HashMap<String, i64>,
+    pantry: HashMap<String, i64>
 }
 
 #[derive(Serialize)]
 struct RecipeOutput {
-    cookies: i32,
-    pantry: HashMap<String, i32>
+    cookies: i64,
+    pantry: HashMap<String, i64>
 }
 
 #[get("/7/decode")]
@@ -27,6 +27,7 @@ pub async fn weed(req: HttpRequest) -> web::Json<RecipeOutput> {
     let cookie = req.cookie("recipe").unwrap();
     let decoded = decode(cookie.value());
     let mut input: RecipeInput = serde_json::from_str(&decoded).unwrap();
+    input.recipe.retain(|_, &mut v| v != 0);
 
     let mut possible_amts = Vec::new();
     

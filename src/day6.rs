@@ -1,10 +1,11 @@
 use actix_web::{post, web};
-use fancy_regex::Regex;
+use onig::*;
 use serde::Serialize;
 use lazy_static::lazy_static;
 
 lazy_static! {
     static ref RE: Regex = Regex::new(r"(?<!elf on a) shelf").unwrap();
+    static ref SHELF: Regex = Regex::new(r"^elf on a shelf").unwrap();
 }
 
 #[derive(Serialize)]
@@ -18,14 +19,11 @@ struct ElfCount {
 
 #[post("/6")]
 pub async fn elf(text: String) -> web::Json<ElfCount> {
-    let no_shelf = match RE.captures(&text) {
-        Ok(Some(c)) => c.len(),
-        _ => 0
-    };
+    let no_shelf = RE.find_iter(&text).count();
 
     web::Json(ElfCount { 
-        elf: text.rmatches("elf").count(), 
-        shelf: text.rmatches("elf on a shelf").count(), 
+        elf: text.matches("elf").count(), 
+        shelf: text.char_indices().filter_map(|(i,_)| SHELF.captures(&text[i..])).count(), 
         no_shelf
     })
 }
