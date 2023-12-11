@@ -1,5 +1,6 @@
 use actix_web::{get, web::{ServiceConfig, self}, HttpResponse};
 use day1::packet_math;
+use day11::{decoration, magic_goggles};
 use day4::{strength, contest};
 use day6::elf;
 use day7::{cookies, weed};
@@ -12,6 +13,7 @@ mod day4;
 mod day6;
 mod day7;
 mod day8;
+mod day11;
 
 #[get("/")]
 async fn hello_world() -> &'static str {
@@ -36,6 +38,8 @@ async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clon
         cfg.service(weed);
         cfg.service(vaporeon_breeding);
         cfg.service(vaporeon_splat);
+        cfg.service(decoration);
+        cfg.service(magic_goggles);
         cfg.app_data(web::Data::new(RustemonClient::default()));
     };
 
