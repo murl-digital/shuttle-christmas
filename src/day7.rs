@@ -6,17 +6,12 @@ use actix_web::{
     HttpRequest,
 };
 use base64::Engine;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde_json::json;
 
 #[derive(Deserialize, Debug)]
-struct RecipeInput {
+struct Recipe {
     recipe: HashMap<String, i64>,
-    pantry: HashMap<String, i64>,
-}
-
-#[derive(Serialize)]
-struct RecipeOutput {
-    cookies: i64,
     pantry: HashMap<String, i64>,
 }
 
@@ -27,10 +22,10 @@ async fn cookies(req: HttpRequest) -> String {
 }
 
 #[get("/7/bake")]
-async fn weed(req: HttpRequest) -> web::Json<RecipeOutput> {
+async fn weed(req: HttpRequest) -> web::Json<serde_json::Value> {
     let cookie = req.cookie("recipe").unwrap();
     let decoded = decode(cookie.value());
-    let mut input: RecipeInput = serde_json::from_str(&decoded).unwrap();
+    let mut input: Recipe = serde_json::from_str(&decoded).unwrap();
     input.recipe.retain(|_, &mut v| v != 0);
 
     let mut possible_amts = Vec::new();
@@ -39,10 +34,10 @@ async fn weed(req: HttpRequest) -> web::Json<RecipeOutput> {
         match input.pantry.get(item) {
             Some(p_qty) => possible_amts.push(p_qty / qty),
             None => {
-                return web::Json(RecipeOutput {
-                    cookies: 0,
-                    pantry: input.pantry,
-                })
+                return web::Json(json!({
+                    "cookies": 0,
+                    "pantry": input.pantry,
+                }))
             }
         }
     }
@@ -57,10 +52,10 @@ async fn weed(req: HttpRequest) -> web::Json<RecipeOutput> {
             .insert(item.clone(), pantry_amt - (qty * baked_cookies));
     }
 
-    web::Json(RecipeOutput {
-        cookies: baked_cookies,
-        pantry: input.pantry,
-    })
+    web::Json(json!({
+        "cookies": baked_cookies,
+        "pantry": input.pantry,
+    }))
 }
 
 fn decode(input: &str) -> String {

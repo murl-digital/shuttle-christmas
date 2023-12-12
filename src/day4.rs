@@ -2,7 +2,8 @@ use actix_web::{
     post,
     web::{self, ServiceConfig},
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde_json::json;
 
 #[derive(Deserialize)]
 struct Reindeer {
@@ -22,21 +23,13 @@ struct ContestReindeer {
     candies_eaten_yesterday: i32,
 }
 
-#[derive(Serialize)]
-struct Summary {
-    fastest: String,
-    tallest: String,
-    magician: String,
-    consumer: String,
-}
-
 #[post("/4/strength")]
 async fn strength(reindeer: web::Json<Vec<Reindeer>>) -> String {
     reindeer.iter().map(|r| r.strength).sum::<i32>().to_string()
 }
 
 #[post("/4/contest")]
-async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<Summary> {
+async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<serde_json::Value> {
     let mut fastest_contenst = reindeer.clone();
     fastest_contenst.sort_by(|a, b| a.speed.total_cmp(&b.speed));
     fastest_contenst.reverse();
@@ -57,24 +50,24 @@ async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<Summary
     cursed_contenst.reverse();
     let consumer = cursed_contenst.first().expect("empty result?");
 
-    web::Json(Summary {
-        fastest: format!(
+    web::Json(json!({
+        "fastest": format!(
             "Speeding past the finish line with a strength of {1} is {0}",
             fastest.name, fastest.strength
         ),
-        tallest: format!(
+        "tallest": format!(
             "{} is standing tall with his {} cm wide antlers",
             tallest.name, tallest.antler_width
         ),
-        magician: format!(
+        "magician": format!(
             "{} could blast you away with a snow magic power of {}",
             magician.name, magician.snow_magic_power
         ),
-        consumer: format!(
+        "consumer": format!(
             "{} ate lots of candies, but also some {}",
             consumer.name, consumer.favorite_food
         ),
-    })
+    }))
 }
 
 pub fn day4(cfg: &mut ServiceConfig) {
