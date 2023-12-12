@@ -1,7 +1,7 @@
-use actix_web::{get, web::{self}, Result, error::ErrorBadRequest};
+use actix_web::{get, web::{self, ServiceConfig}, Result, error::ErrorBadRequest};
 
 #[get("/1/{nums:.*}")]
-pub async fn packet_math(nums: web::Path<String>) -> Result<String> {
+async fn packet_math(nums: web::Path<String>) -> Result<String> {
     let nums: Vec<Result<i32, _>> = nums.into_inner().split('/').map(|s| s.parse::<i32>()).collect();
 
     let mut result = 0;
@@ -13,4 +13,8 @@ pub async fn packet_math(nums: web::Path<String>) -> Result<String> {
     }
 
     Ok(result.pow(3).to_string())
+}
+
+pub fn day1(cfg: &mut ServiceConfig) {
+    cfg.service(packet_math);
 }

@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use actix_web::{get, HttpRequest, web};
+use actix_web::{get, HttpRequest, web::{self, ServiceConfig}};
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 
@@ -17,13 +17,13 @@ struct RecipeOutput {
 }
 
 #[get("/7/decode")]
-pub async fn cookies(req: HttpRequest) -> String {
+async fn cookies(req: HttpRequest) -> String {
     let cookie = req.cookie("recipe").unwrap();
     decode(cookie.value())
 }
 
 #[get("/7/bake")]
-pub async fn weed(req: HttpRequest) -> web::Json<RecipeOutput> {
+async fn weed(req: HttpRequest) -> web::Json<RecipeOutput> {
     let cookie = req.cookie("recipe").unwrap();
     let decoded = decode(cookie.value());
     let mut input: RecipeInput = serde_json::from_str(&decoded).unwrap();
@@ -55,4 +55,9 @@ pub async fn weed(req: HttpRequest) -> web::Json<RecipeOutput> {
 fn decode(input: &str) -> String {
     let decoded = base64::engine::general_purpose::STANDARD.decode(input).unwrap();
     String::from_utf8(decoded).unwrap()
+}
+
+pub fn day7(cfg: &mut ServiceConfig) {
+    cfg.service(cookies);
+    cfg.service(weed);
 }

@@ -1,4 +1,4 @@
-use actix_web::{get, web};
+use actix_web::{get, web::{self, ServiceConfig}};
 use rustemon::client::RustemonClient;
 
 // (2.0f64 * 9.825f64 * 10.0f64).sqrt()
@@ -19,4 +19,10 @@ pub async fn vaporeon_splat(client: web::Data<RustemonClient>, idx: web::Path<i6
     let weight = mon.weight as f64 / 10_f64;
 
     (ROOT_2GH * weight).to_string()
+}
+
+pub fn day8(cfg: &mut ServiceConfig) {
+    cfg.service(vaporeon_breeding);
+    cfg.service(vaporeon_splat);
+    cfg.app_data(web::Data::new(RustemonClient::default()));
 }

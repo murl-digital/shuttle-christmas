@@ -1,12 +1,11 @@
-use actix_web::{get, web::{ServiceConfig, self}, HttpResponse};
-use day1::packet_math;
-use day11::{decoration, magic_goggles};
+use actix_web::{get, web::ServiceConfig, HttpResponse};
+use day1::day1;
+use day11::day11;
 use day12::day12;
-use day4::{strength, contest};
-use day6::elf;
-use day7::{cookies, weed};
-use day8::{vaporeon_breeding, vaporeon_splat};
-use rustemon::client::RustemonClient;
+use day4::day4;
+use day6::day6;
+use day7::day7;
+use day8::day8;
 use shuttle_actix_web::ShuttleActixWeb;
 
 mod day1;
@@ -32,17 +31,12 @@ async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clon
     let config = move |cfg: &mut ServiceConfig| {
         cfg.service(hello_world);
         cfg.service(die);
-        cfg.service(packet_math);
-        cfg.service(strength);
-        cfg.service(contest);
-        cfg.service(elf);
-        cfg.service(cookies);
-        cfg.service(weed);
-        cfg.service(vaporeon_breeding);
-        cfg.service(vaporeon_splat);
-        cfg.service(decoration);
-        cfg.service(magic_goggles);
-        cfg.app_data(web::Data::new(RustemonClient::default()));
+        day1(cfg);
+        day4(cfg);
+        day6(cfg);
+        day7(cfg);
+        day8(cfg);
+        day11(cfg);
         day12(cfg);
     };
 

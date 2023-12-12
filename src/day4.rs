@@ -1,4 +1,4 @@
-use actix_web::{web, post};
+use actix_web::{web::{self, ServiceConfig}, post};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -28,12 +28,12 @@ struct Summary {
 }
 
 #[post("/4/strength")]
-pub async fn strength(reindeer: web::Json<Vec<Reindeer>>) -> String {
+async fn strength(reindeer: web::Json<Vec<Reindeer>>) -> String {
     reindeer.iter().map(|r| r.strength).sum::<i32>().to_string()
 }
 
 #[post("/4/contest")]
-pub async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<Summary> {
+async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<Summary> {
     let mut fastest_contenst = reindeer.clone();
     fastest_contenst.sort_by(|a, b| a.speed.total_cmp(&b.speed));
     fastest_contenst.reverse();
@@ -60,4 +60,9 @@ pub async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<Sum
         magician: format!("{} could blast you away with a snow magic power of {}", magician.name, magician.snow_magic_power), 
         consumer: format!("{} ate lots of candies, but also some {}", consumer.name, consumer.favorite_food) 
     })
+}
+
+pub fn day4(cfg: &mut ServiceConfig) {
+    cfg.service(strength);
+    cfg.service(contest);
 }
