@@ -1,7 +1,11 @@
 use std::{collections::HashMap, time::Instant};
 
-use actix_web::{post, HttpResponse, web::{self, ServiceConfig}, get};
-use chrono::{Utc, DateTime, Datelike};
+use actix_web::{
+    get, post,
+    web::{self, ServiceConfig},
+    HttpResponse,
+};
+use chrono::{DateTime, Datelike, Utc};
 use serde_json::json;
 use tokio::sync::RwLock;
 use ulid::Ulid;
@@ -9,7 +13,7 @@ use uuid::Uuid;
 
 #[derive(Default)]
 struct Day12State {
-    packets: RwLock<HashMap<String, Instant>>
+    packets: RwLock<HashMap<String, Instant>>,
 }
 
 #[post("/12/save/{id}")]
@@ -37,31 +41,39 @@ async fn ulids(ulids: web::Json<Vec<Ulid>>) -> web::Json<Vec<Uuid>> {
 }
 
 #[post("/12/ulids/{weekday}")]
-async fn ulids_stats(other_ulids: web::Json<Vec<Ulid>>, weekday: web::Path<u32>) -> web::Json<serde_json::Value> {
-    let christmas_eve = other_ulids.iter().filter(|u| {
-        let utc: DateTime<Utc> = u.datetime().into();
-        utc.month() == 12 && utc.day() == 24
-    }).count();
-    let weekday = other_ulids.iter().filter(|u| {
-        let utc: DateTime<Utc> = u.datetime().into();
-        utc.weekday().num_days_from_monday() == *weekday
-    }).count();
-    let future = other_ulids.iter().filter(|u| {
-        let utc: DateTime<Utc> = u.datetime().into();
-        utc > Utc::now()
-    }).count();
-    let broil = other_ulids.iter().filter(|u| {
-        u.random() & 1 == 1
-    }).count();
-
-    web::Json(
-        json!({
-            "christmas eve": christmas_eve,
-            "weekday": weekday,
-            "in the future": future,
-            "LSB is 1": broil
+async fn ulids_stats(
+    other_ulids: web::Json<Vec<Ulid>>,
+    weekday: web::Path<u32>,
+) -> web::Json<serde_json::Value> {
+    let christmas_eve = other_ulids
+        .iter()
+        .filter(|u| {
+            let utc: DateTime<Utc> = u.datetime().into();
+            utc.month() == 12 && utc.day() == 24
         })
-    )
+        .count();
+    let weekday = other_ulids
+        .iter()
+        .filter(|u| {
+            let utc: DateTime<Utc> = u.datetime().into();
+            utc.weekday().num_days_from_monday() == *weekday
+        })
+        .count();
+    let future = other_ulids
+        .iter()
+        .filter(|u| {
+            let utc: DateTime<Utc> = u.datetime().into();
+            utc > Utc::now()
+        })
+        .count();
+    let broil = other_ulids.iter().filter(|u| u.random() & 1 == 1).count();
+
+    web::Json(json!({
+        "christmas eve": christmas_eve,
+        "weekday": weekday,
+        "in the future": future,
+        "LSB is 1": broil
+    }))
 }
 
 pub fn day12(cfg: &mut ServiceConfig) {

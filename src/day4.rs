@@ -1,9 +1,12 @@
-use actix_web::{web::{self, ServiceConfig}, post};
+use actix_web::{
+    post,
+    web::{self, ServiceConfig},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 struct Reindeer {
-    strength: i32
+    strength: i32,
 }
 
 #[derive(Deserialize, Clone)]
@@ -16,7 +19,7 @@ struct ContestReindeer {
     snow_magic_power: i32,
     favorite_food: String,
     #[serde(alias = "cAnD13s_3ATeN-yesT3rdAy")]
-    candies_eaten_yesterday: i32
+    candies_eaten_yesterday: i32,
 }
 
 #[derive(Serialize)]
@@ -24,7 +27,7 @@ struct Summary {
     fastest: String,
     tallest: String,
     magician: String,
-    consumer: String
+    consumer: String,
 }
 
 #[post("/4/strength")]
@@ -54,11 +57,23 @@ async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<Summary
     cursed_contenst.reverse();
     let consumer = cursed_contenst.first().expect("empty result?");
 
-    web::Json(Summary { 
-        fastest: format!("Speeding past the finish line with a strength of {1} is {0}", fastest.name, fastest.strength), 
-        tallest: format!("{} is standing tall with his {} cm wide antlers", tallest.name, tallest.antler_width), 
-        magician: format!("{} could blast you away with a snow magic power of {}", magician.name, magician.snow_magic_power), 
-        consumer: format!("{} ate lots of candies, but also some {}", consumer.name, consumer.favorite_food) 
+    web::Json(Summary {
+        fastest: format!(
+            "Speeding past the finish line with a strength of {1} is {0}",
+            fastest.name, fastest.strength
+        ),
+        tallest: format!(
+            "{} is standing tall with his {} cm wide antlers",
+            tallest.name, tallest.antler_width
+        ),
+        magician: format!(
+            "{} could blast you away with a snow magic power of {}",
+            magician.name, magician.snow_magic_power
+        ),
+        consumer: format!(
+            "{} ate lots of candies, but also some {}",
+            consumer.name, consumer.favorite_food
+        ),
     })
 }
 

@@ -9,12 +9,12 @@ use day8::day8;
 use shuttle_actix_web::ShuttleActixWeb;
 
 mod day1;
+mod day11;
+mod day12;
 mod day4;
 mod day6;
 mod day7;
 mod day8;
-mod day11;
-mod day12;
 
 #[get("/")]
 async fn hello_world() -> &'static str {
