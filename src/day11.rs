@@ -1,6 +1,10 @@
 use actix_files::NamedFile;
-use actix_multipart::form::{bytes::Bytes, MultipartForm};
-use actix_web::{get, post, web::ServiceConfig, Responder};
+use actix_multipart::form::{bytes::Bytes, MultipartForm, MultipartFormConfig};
+use actix_web::{
+    get, post,
+    web::{self, ServiceConfig},
+    Responder,
+};
 use image::GenericImageView;
 
 #[derive(MultipartForm)]
@@ -27,4 +31,8 @@ async fn magic_goggles(form: MultipartForm<FormData>) -> String {
 pub fn day11(cfg: &mut ServiceConfig) {
     cfg.service(decoration);
     cfg.service(magic_goggles);
+    // you can solve this without upping the memory limit, i just chose to because i wanted to play with larger images
+    cfg.app_data(web::Data::new(
+        MultipartFormConfig::default().memory_limit(52_428_800),
+    ));
 }
