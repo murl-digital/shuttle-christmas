@@ -9,8 +9,10 @@ actix-multipart = "0.6.1"
 actix-files = "0.6.2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-shuttle-actix-web = "0.35.0"
-shuttle-runtime = "0.35.0"
+shuttle-actix-web = "0.35"
+shuttle-runtime = "0.35"
+shuttle-shared-db = { version = "0.35", features = ["postgres"]}
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "macros"] }
 tokio = "1.26.0"
 onig = { version = "6", default-features = false }
 image = "0.24"

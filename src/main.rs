@@ -1,16 +1,23 @@
-use actix_web::{get, web::ServiceConfig, HttpResponse};
+use actix_web::{
+    get,
+    web::{self, ServiceConfig},
+    HttpResponse,
+};
 use day1::day1;
 use day11::day11;
 use day12::day12;
+use day13::day13;
 use day4::day4;
 use day6::day6;
 use day7::day7;
 use day8::day8;
 use shuttle_actix_web::ShuttleActixWeb;
+use sqlx::PgPool;
 
 mod day1;
 mod day11;
 mod day12;
+mod day13;
 mod day4;
 mod day6;
 mod day7;
@@ -27,8 +34,11 @@ async fn die() -> HttpResponse {
 }
 
 #[shuttle_runtime::main]
-async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+async fn main(
+    #[shuttle_shared_db::Postgres] pool: PgPool,
+) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
     let config = move |cfg: &mut ServiceConfig| {
+        cfg.app_data(web::Data::new(pool));
         cfg.service(hello_world);
         cfg.service(die);
         day1(cfg);
@@ -38,6 +48,7 @@ async fn main() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clon
         day8(cfg);
         day11(cfg);
         day12(cfg);
+        day13(cfg);
     };
 
     Ok(config.into())

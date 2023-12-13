@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        DROP TABLE IF EXISTS orders;\n    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "4e31f5bcfb5ba3d9ead32b31c758f745cf630b97c432eac64da518acc8c78382"
+}

@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT SUM(quantity) as quantity, gift_name FROM orders GROUP BY gift_name ORDER BY quantity DESC LIMIT 2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "quantity",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "gift_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null,
+      true
+    ]
+  },
+  "hash": "08e1e754d4488c2349d223ba92e1a99e32a61518274e4da030f17ee5ca461a63"
+}
