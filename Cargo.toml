@@ -23,3 +23,5 @@ rustemon = "3.0"
 ulid = { version = "1", features = ["serde", "uuid"] }
 uuid = { version = "1", features = ["serde"] }
 chrono = { version = "0.4", features = ["clock"] }
+mime = "0.3"
+askama = "0.12"
