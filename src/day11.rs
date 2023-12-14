@@ -1,9 +1,10 @@
 use actix_files::NamedFile;
 use actix_multipart::form::{bytes::Bytes, MultipartForm, MultipartFormConfig};
 use actix_web::{
+    error::ErrorInternalServerError,
     get, post,
     web::{self, ServiceConfig},
-    Responder, Result, error::ErrorInternalServerError,
+    Responder, Result,
 };
 use image::GenericImageView;
 
@@ -22,12 +23,11 @@ async fn magic_goggles(form: MultipartForm<FormData>) -> Result<String> {
     let img = image::load_from_memory(&form.image.data).map_err(ErrorInternalServerError)?;
 
     // i have to do this cast otherwise the value overflows
-    Ok(
-        img.pixels()
+    Ok(img
+        .pixels()
         .filter(|(_, _, pixel)| pixel.0[0] as i32 > pixel.0[1] as i32 + pixel.0[2] as i32)
         .count()
-        .to_string()
-    )
+        .to_string())
 }
 
 pub fn day11(cfg: &mut ServiceConfig) {

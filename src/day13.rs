@@ -1,7 +1,8 @@
 use actix_web::{
+    error::ErrorInternalServerError,
     get, post,
     web::{self, ServiceConfig},
-    HttpResponse, Error, error::ErrorInternalServerError, Result,
+    Error, HttpResponse, Result,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -22,7 +23,10 @@ async fn sql(pool: web::Data<PgPool>) -> Result<String, Error> {
         .await
         .map_err(ErrorInternalServerError)?;
 
-    Ok(sql.output.ok_or(ErrorInternalServerError("no output"))?.to_string())
+    Ok(sql
+        .output
+        .ok_or(ErrorInternalServerError("no output"))?
+        .to_string())
 }
 
 #[post("/13/reset")]
@@ -53,7 +57,10 @@ async fn reset(pool: web::Data<PgPool>) -> Result<HttpResponse, Error> {
 }
 
 #[post("/13/orders")]
-async fn add_orders(pool: web::Data<PgPool>, orders: web::Json<Vec<Order>>) -> Result<HttpResponse> {
+async fn add_orders(
+    pool: web::Data<PgPool>,
+    orders: web::Json<Vec<Order>>,
+) -> Result<HttpResponse> {
     let mut query_builder =
         QueryBuilder::new("INSERT INTO orders (id, region_id, gift_name, quantity)");
 
@@ -65,7 +72,10 @@ async fn add_orders(pool: web::Data<PgPool>, orders: web::Json<Vec<Order>>) -> R
     });
 
     let query = query_builder.build();
-    query.execute(pool.as_ref()).await.map_err(ErrorInternalServerError)?;
+    query
+        .execute(pool.as_ref())
+        .await
+        .map_err(ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().finish())
 }
@@ -77,11 +87,9 @@ async fn total(pool: web::Data<PgPool>) -> Result<web::Json<serde_json::Value>> 
         .await
         .map_err(ErrorInternalServerError)?;
 
-    Ok(
-        web::Json(json!({
-            "total": total.total.unwrap_or(0)
-        }))
-    )
+    Ok(web::Json(json!({
+        "total": total.total.unwrap_or(0)
+    })))
 }
 
 #[get("/13/orders/popular")]

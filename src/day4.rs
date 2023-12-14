@@ -1,6 +1,8 @@
 use actix_web::{
+    error::ErrorBadRequest,
     post,
-    web::{self, ServiceConfig}, Result, error::ErrorBadRequest,
+    web::{self, ServiceConfig},
+    Result,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -29,9 +31,13 @@ async fn strength(reindeer: web::Json<Vec<Reindeer>>) -> String {
 }
 
 #[post("/4/contest")]
-async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> Result<web::Json<serde_json::Value>> {
+async fn contest(
+    reindeer: web::Json<Vec<ContestReindeer>>,
+) -> Result<web::Json<serde_json::Value>> {
     if reindeer.is_empty() {
-        return Err(ErrorBadRequest("cannot run a contest against an empty list"))
+        return Err(ErrorBadRequest(
+            "cannot run a contest against an empty list",
+        ));
     }
 
     let mut fastest_contenst = reindeer.clone();

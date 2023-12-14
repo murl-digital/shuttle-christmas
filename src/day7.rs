@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use actix_web::{
+    error::{ErrorBadRequest, ErrorInternalServerError},
     get,
     web::{self, ServiceConfig},
-    HttpRequest, Result, error::{ErrorInternalServerError, ErrorBadRequest},
+    HttpRequest, Result,
 };
 use base64::Engine;
 use serde::Deserialize;
@@ -17,13 +18,17 @@ struct Recipe {
 
 #[get("/7/decode")]
 async fn cookies(req: HttpRequest) -> Result<String> {
-    let cookie = req.cookie("recipe").ok_or(ErrorBadRequest("recipe cookie not present"))?;
+    let cookie = req
+        .cookie("recipe")
+        .ok_or(ErrorBadRequest("recipe cookie not present"))?;
     decode(cookie.value())
 }
 
 #[get("/7/bake")]
 async fn weed(req: HttpRequest) -> Result<web::Json<serde_json::Value>> {
-    let cookie = req.cookie("recipe").ok_or(ErrorBadRequest("recipe cookie not present"))?;
+    let cookie = req
+        .cookie("recipe")
+        .ok_or(ErrorBadRequest("recipe cookie not present"))?;
     let decoded = decode(cookie.value())?;
     let mut input: Recipe = serde_json::from_str(&decoded)?;
     input.recipe.retain(|_, &mut v| v != 0);
@@ -46,7 +51,9 @@ async fn weed(req: HttpRequest) -> Result<web::Json<serde_json::Value>> {
     let baked_cookies = possible_amts[0];
 
     for (item, qty) in input.recipe.iter() {
-        let pantry_amt = input.pantry.get(item).ok_or(ErrorInternalServerError("pantry items magically dissapeared, please report to the reality police"))?;
+        let pantry_amt = input.pantry.get(item).ok_or(ErrorInternalServerError(
+            "pantry items magically dissapeared, please report to the reality police",
+        ))?;
         input
             .pantry
             .insert(item.clone(), pantry_amt - (qty * baked_cookies));

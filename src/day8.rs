@@ -1,6 +1,8 @@
 use actix_web::{
+    error::ErrorInternalServerError,
     get,
-    web::{self, ServiceConfig}, Result, error::ErrorInternalServerError,
+    web::{self, ServiceConfig},
+    Result,
 };
 use rustemon::client::RustemonClient;
 
@@ -8,7 +10,10 @@ use rustemon::client::RustemonClient;
 const ROOT_2GH: f64 = 14.0178457689;
 
 #[get("/8/weight/{idx}")]
-pub async fn vaporeon_breeding(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> Result<String> {
+pub async fn vaporeon_breeding(
+    client: web::Data<RustemonClient>,
+    idx: web::Path<i64>,
+) -> Result<String> {
     let mon = rustemon::pokemon::pokemon::get_by_id(*idx, &client)
         .await
         .map_err(ErrorInternalServerError)?;
@@ -17,7 +22,10 @@ pub async fn vaporeon_breeding(client: web::Data<RustemonClient>, idx: web::Path
 }
 
 #[get("/8/drop/{idx}")]
-pub async fn vaporeon_splat(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> Result<String> {
+pub async fn vaporeon_splat(
+    client: web::Data<RustemonClient>,
+    idx: web::Path<i64>,
+) -> Result<String> {
     let mon = rustemon::pokemon::pokemon::get_by_id(*idx, &client)
         .await
         .map_err(ErrorInternalServerError)?;
