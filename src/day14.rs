@@ -1,8 +1,7 @@
 use actix_web::{
     post,
     web::{self, ServiceConfig},
-    HttpResponse,
-    error::{Error, self}
+    HttpResponse, Result, error::ErrorInternalServerError
 };
 use askama::Template;
 use serde::Deserialize;
@@ -31,8 +30,8 @@ async fn yuck(input: web::Json<Day14Input>) -> HttpResponse {
 }
 
 #[post("/14/safe")]
-async fn not_yuck(input: web::Json<Day14Input>) -> Result<HttpResponse, Error> {
-    let rendered_text = input.render().map_err(error::ErrorInternalServerError)?;
+async fn not_yuck(input: web::Json<Day14Input>) -> Result<HttpResponse> {
+    let rendered_text = input.render().map_err(ErrorInternalServerError)?;
     Ok(HttpResponse::Ok()
     .content_type(mime::TEXT_HTML_UTF_8)
     .body(rendered_text))

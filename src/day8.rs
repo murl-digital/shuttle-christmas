@@ -1,6 +1,6 @@
 use actix_web::{
     get,
-    web::{self, ServiceConfig},
+    web::{self, ServiceConfig}, Result, error::ErrorInternalServerError,
 };
 use rustemon::client::RustemonClient;
 
@@ -8,23 +8,23 @@ use rustemon::client::RustemonClient;
 const ROOT_2GH: f64 = 14.0178457689;
 
 #[get("/8/weight/{idx}")]
-pub async fn vaporeon_breeding(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> String {
+pub async fn vaporeon_breeding(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> Result<String> {
     let mon = rustemon::pokemon::pokemon::get_by_id(*idx, &client)
         .await
-        .unwrap();
+        .map_err(ErrorInternalServerError)?;
 
-    (mon.weight as f64 / 10_f64).to_string()
+    Ok((mon.weight as f64 / 10_f64).to_string())
 }
 
 #[get("/8/drop/{idx}")]
-pub async fn vaporeon_splat(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> String {
+pub async fn vaporeon_splat(client: web::Data<RustemonClient>, idx: web::Path<i64>) -> Result<String> {
     let mon = rustemon::pokemon::pokemon::get_by_id(*idx, &client)
         .await
-        .unwrap();
+        .map_err(ErrorInternalServerError)?;
 
     let weight = mon.weight as f64 / 10_f64;
 
-    (ROOT_2GH * weight).to_string()
+    Ok((ROOT_2GH * weight).to_string())
 }
 
 pub fn day8(cfg: &mut ServiceConfig) {

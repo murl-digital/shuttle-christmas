@@ -1,6 +1,6 @@
 use actix_web::{
     post,
-    web::{self, ServiceConfig},
+    web::{self, ServiceConfig}, Result, error::ErrorBadRequest,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -29,7 +29,11 @@ async fn strength(reindeer: web::Json<Vec<Reindeer>>) -> String {
 }
 
 #[post("/4/contest")]
-async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<serde_json::Value> {
+async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> Result<web::Json<serde_json::Value>> {
+    if reindeer.is_empty() {
+        return Err(ErrorBadRequest("cannot run a contest against an empty list"))
+    }
+
     let mut fastest_contenst = reindeer.clone();
     fastest_contenst.sort_by(|a, b| a.speed.total_cmp(&b.speed));
     fastest_contenst.reverse();
@@ -50,7 +54,7 @@ async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<serde_j
     cursed_contenst.reverse();
     let consumer = cursed_contenst.first().expect("empty result?");
 
-    web::Json(json!({
+    Ok(web::Json(json!({
         "fastest": format!(
             "Speeding past the finish line with a strength of {1} is {0}",
             fastest.name, fastest.strength
@@ -67,7 +71,7 @@ async fn contest(reindeer: web::Json<Vec<ContestReindeer>>) -> web::Json<serde_j
             "{} ate lots of candies, but also some {}",
             consumer.name, consumer.favorite_food
         ),
-    }))
+    })))
 }
 
 pub fn day4(cfg: &mut ServiceConfig) {

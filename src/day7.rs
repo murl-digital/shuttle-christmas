@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use actix_web::{
     get,
     web::{self, ServiceConfig},
-    HttpRequest,
+    HttpRequest, Result, error::{ErrorInternalServerError, ErrorBadRequest},
 };
 use base64::Engine;
 use serde::Deserialize;
@@ -16,16 +16,16 @@ struct Recipe {
 }
 
 #[get("/7/decode")]
-async fn cookies(req: HttpRequest) -> String {
-    let cookie = req.cookie("recipe").unwrap();
+async fn cookies(req: HttpRequest) -> Result<String> {
+    let cookie = req.cookie("recipe").ok_or(ErrorBadRequest("recipe cookie not present"))?;
     decode(cookie.value())
 }
 
 #[get("/7/bake")]
-async fn weed(req: HttpRequest) -> web::Json<serde_json::Value> {
-    let cookie = req.cookie("recipe").unwrap();
-    let decoded = decode(cookie.value());
-    let mut input: Recipe = serde_json::from_str(&decoded).unwrap();
+async fn weed(req: HttpRequest) -> Result<web::Json<serde_json::Value>> {
+    let cookie = req.cookie("recipe").ok_or(ErrorBadRequest("recipe cookie not present"))?;
+    let decoded = decode(cookie.value())?;
+    let mut input: Recipe = serde_json::from_str(&decoded)?;
     input.recipe.retain(|_, &mut v| v != 0);
 
     let mut possible_amts = Vec::new();
@@ -34,10 +34,10 @@ async fn weed(req: HttpRequest) -> web::Json<serde_json::Value> {
         match input.pantry.get(item) {
             Some(p_qty) => possible_amts.push(p_qty / qty),
             None => {
-                return web::Json(json!({
+                return Ok(web::Json(json!({
                     "cookies": 0,
                     "pantry": input.pantry,
-                }))
+                })))
             }
         }
     }
@@ -46,23 +46,23 @@ async fn weed(req: HttpRequest) -> web::Json<serde_json::Value> {
     let baked_cookies = possible_amts[0];
 
     for (item, qty) in input.recipe.iter() {
-        let pantry_amt = input.pantry.get(item).unwrap();
+        let pantry_amt = input.pantry.get(item).ok_or(ErrorInternalServerError("pantry items magically dissapeared, please report to the reality police"))?;
         input
             .pantry
             .insert(item.clone(), pantry_amt - (qty * baked_cookies));
     }
 
-    web::Json(json!({
+    Ok(web::Json(json!({
         "cookies": baked_cookies,
         "pantry": input.pantry,
-    }))
+    })))
 }
 
-fn decode(input: &str) -> String {
+fn decode(input: &str) -> Result<String> {
     let decoded = base64::engine::general_purpose::STANDARD
         .decode(input)
-        .unwrap();
-    String::from_utf8(decoded).unwrap()
+        .map_err(ErrorInternalServerError)?;
+    String::from_utf8(decoded).map_err(ErrorInternalServerError)
 }
 
 pub fn day7(cfg: &mut ServiceConfig) {

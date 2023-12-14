@@ -3,7 +3,7 @@ use actix_multipart::form::{bytes::Bytes, MultipartForm, MultipartFormConfig};
 use actix_web::{
     get, post,
     web::{self, ServiceConfig},
-    Responder,
+    Responder, Result, error::ErrorInternalServerError,
 };
 use image::GenericImageView;
 
@@ -18,14 +18,16 @@ async fn decoration() -> impl Responder {
 }
 
 #[post("/11/red_pixels")]
-async fn magic_goggles(form: MultipartForm<FormData>) -> String {
-    let img = image::load_from_memory(&form.image.data).unwrap();
+async fn magic_goggles(form: MultipartForm<FormData>) -> Result<String> {
+    let img = image::load_from_memory(&form.image.data).map_err(ErrorInternalServerError)?;
 
     // i have to do this cast otherwise the value overflows
-    img.pixels()
+    Ok(
+        img.pixels()
         .filter(|(_, _, pixel)| pixel.0[0] as i32 > pixel.0[1] as i32 + pixel.0[2] as i32)
         .count()
         .to_string()
+    )
 }
 
 pub fn day11(cfg: &mut ServiceConfig) {

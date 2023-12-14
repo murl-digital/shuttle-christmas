@@ -1,7 +1,7 @@
 use actix_web::{
     get, post,
     web::{self, ServiceConfig},
-    HttpResponse,
+    HttpResponse, Error, error::ErrorInternalServerError, Result,
 };
 use serde::Deserialize;
 use serde_json::json;
@@ -16,17 +16,17 @@ struct Order {
 }
 
 #[get("/13/sql")]
-async fn sql(pool: web::Data<PgPool>) -> String {
+async fn sql(pool: web::Data<PgPool>) -> Result<String, Error> {
     let sql = sqlx::query!("SELECT 20231213 as output")
         .fetch_one(pool.get_ref())
         .await
-        .unwrap();
+        .map_err(ErrorInternalServerError)?;
 
-    sql.output.unwrap().to_string()
+    Ok(sql.output.ok_or(ErrorInternalServerError("no output"))?.to_string())
 }
 
 #[post("/13/reset")]
-async fn reset(pool: web::Data<PgPool>) -> HttpResponse {
+async fn reset(pool: web::Data<PgPool>) -> Result<HttpResponse, Error> {
     sqlx::query!(
         r#"
         DROP TABLE IF EXISTS orders;
@@ -34,7 +34,7 @@ async fn reset(pool: web::Data<PgPool>) -> HttpResponse {
     )
     .execute(pool.get_ref())
     .await
-    .unwrap();
+    .map_err(ErrorInternalServerError)?;
     sqlx::query!(
         r#"
         CREATE TABLE orders (
@@ -47,13 +47,13 @@ async fn reset(pool: web::Data<PgPool>) -> HttpResponse {
     )
     .execute(pool.get_ref())
     .await
-    .unwrap();
+    .map_err(ErrorInternalServerError)?;
 
-    HttpResponse::Ok().finish()
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[post("/13/orders")]
-async fn add_orders(pool: web::Data<PgPool>, orders: web::Json<Vec<Order>>) -> HttpResponse {
+async fn add_orders(pool: web::Data<PgPool>, orders: web::Json<Vec<Order>>) -> Result<HttpResponse> {
     let mut query_builder =
         QueryBuilder::new("INSERT INTO orders (id, region_id, gift_name, quantity)");
 
@@ -65,26 +65,28 @@ async fn add_orders(pool: web::Data<PgPool>, orders: web::Json<Vec<Order>>) -> H
     });
 
     let query = query_builder.build();
-    query.execute(pool.as_ref()).await.unwrap();
+    query.execute(pool.as_ref()).await.map_err(ErrorInternalServerError)?;
 
-    HttpResponse::Ok().finish()
+    Ok(HttpResponse::Ok().finish())
 }
 
 #[get("/13/orders/total")]
-async fn total(pool: web::Data<PgPool>) -> web::Json<serde_json::Value> {
+async fn total(pool: web::Data<PgPool>) -> Result<web::Json<serde_json::Value>> {
     let total = sqlx::query!("SELECT SUM(quantity) as total FROM orders")
         .fetch_one(pool.as_ref())
         .await
-        .unwrap();
+        .map_err(ErrorInternalServerError)?;
 
-    web::Json(json!({
-        "total": total.total.unwrap()
-    }))
+    Ok(
+        web::Json(json!({
+            "total": total.total.unwrap_or(0)
+        }))
+    )
 }
 
 #[get("/13/orders/popular")]
-async fn ayo(pool: web::Data<PgPool>) -> web::Json<serde_json::Value> {
-    let orders = sqlx::query!("SELECT SUM(quantity) as quantity, gift_name FROM orders GROUP BY gift_name ORDER BY quantity DESC LIMIT 2").fetch_all(pool.as_ref()).await.unwrap();
+async fn ayo(pool: web::Data<PgPool>) -> Result<web::Json<serde_json::Value>> {
+    let orders = sqlx::query!("SELECT SUM(quantity) as quantity, gift_name FROM orders GROUP BY gift_name ORDER BY quantity DESC LIMIT 2").fetch_all(pool.as_ref()).await.map_err(ErrorInternalServerError)?;
 
     if orders.first().is_some_and(|f| {
         orders.get(1).is_some_and(|s| {
@@ -92,13 +94,13 @@ async fn ayo(pool: web::Data<PgPool>) -> web::Json<serde_json::Value> {
                 .is_some_and(|fq| s.quantity.is_some_and(|sq| fq == sq))
         })
     }) {
-        web::Json(json!({
+        Ok(web::Json(json!({
             "popular": Option::<String>::None
-        }))
+        })))
     } else {
-        web::Json(json!({
+        Ok(web::Json(json!({
             "popular": orders.first().and_then(|o| o.gift_name.clone())
-        }))
+        })))
     }
 }
 
