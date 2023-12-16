@@ -32,7 +32,7 @@ async fn strength(reindeer: web::Json<Vec<Reindeer>>) -> String {
 
 #[post("/4/contest")]
 async fn contest(
-    reindeer: web::Json<Vec<ContestReindeer>>,
+    mut reindeer: web::Json<Vec<ContestReindeer>>,
 ) -> Result<web::Json<serde_json::Value>> {
     if reindeer.is_empty() {
         return Err(ErrorBadRequest(
@@ -40,25 +40,18 @@ async fn contest(
         ));
     }
 
-    let mut fastest_contenst = reindeer.clone();
-    fastest_contenst.sort_by(|a, b| a.speed.total_cmp(&b.speed));
-    fastest_contenst.reverse();
-    let fastest = fastest_contenst.first().expect("empty result?");
 
-    let mut tallest_contest = reindeer.clone();
-    tallest_contest.sort_by(|a, b| a.height.cmp(&b.height));
-    tallest_contest.reverse();
-    let tallest = reindeer.first().expect("empty result?");
+    reindeer.sort_by(|a, b| a.speed.total_cmp(&b.speed).reverse());
+    let fastest = reindeer.first().expect("empty result?").clone();
 
-    let mut magician_contest = reindeer.clone();
-    magician_contest.sort_by(|a, b| a.snow_magic_power.cmp(&b.snow_magic_power));
-    magician_contest.reverse();
-    let magician = magician_contest.first().expect("empty result?");
+    reindeer.sort_by(|a, b| a.height.cmp(&b.height).reverse());
+    let tallest = reindeer.first().expect("empty result?").clone();
 
-    let mut cursed_contenst = reindeer.clone();
-    cursed_contenst.sort_by(|a, b| a.candies_eaten_yesterday.cmp(&b.candies_eaten_yesterday));
-    cursed_contenst.reverse();
-    let consumer = cursed_contenst.first().expect("empty result?");
+    reindeer.sort_by(|a, b| a.snow_magic_power.cmp(&b.snow_magic_power).reverse());
+    let magician = reindeer.first().expect("empty result?").clone();
+
+    reindeer.sort_by(|a, b| a.candies_eaten_yesterday.cmp(&b.candies_eaten_yesterday).reverse());
+    let consumer = reindeer.first().expect("empty result?").clone();
 
     Ok(web::Json(json!({
         "fastest": format!(
