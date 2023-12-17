@@ -8,6 +8,7 @@ use day11::day11;
 use day12::day12;
 use day13::day13;
 use day14::day14;
+use day15::day15;
 use day4::day4;
 use day6::day6;
 use day7::day7;
@@ -20,6 +21,7 @@ mod day11;
 mod day12;
 mod day13;
 mod day14;
+mod day15;
 mod day4;
 mod day6;
 mod day7;
@@ -52,6 +54,7 @@ async fn main(
         day12(cfg);
         day13(cfg);
         day14(cfg);
+        day15(cfg);
     };
 
     Ok(config.into())
