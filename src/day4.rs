@@ -40,7 +40,6 @@ async fn contest(
         ));
     }
 
-
     reindeer.sort_by(|a, b| a.speed.total_cmp(&b.speed).reverse());
     let fastest = reindeer.first().expect("empty result?").clone();
 
@@ -50,7 +49,11 @@ async fn contest(
     reindeer.sort_by(|a, b| a.snow_magic_power.cmp(&b.snow_magic_power).reverse());
     let magician = reindeer.first().expect("empty result?").clone();
 
-    reindeer.sort_by(|a, b| a.candies_eaten_yesterday.cmp(&b.candies_eaten_yesterday).reverse());
+    reindeer.sort_by(|a, b| {
+        a.candies_eaten_yesterday
+            .cmp(&b.candies_eaten_yesterday)
+            .reverse()
+    });
     let consumer = reindeer.first().expect("empty result?").clone();
 
     Ok(web::Json(json!({

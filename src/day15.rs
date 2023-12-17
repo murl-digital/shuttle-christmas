@@ -1,4 +1,8 @@
-use actix_web::{web::{ServiceConfig, self}, HttpResponse, post};
+use actix_web::{
+    post,
+    web::{self, ServiceConfig},
+    HttpResponse,
+};
 use lazy_static::lazy_static;
 use onig::Regex;
 use serde::Deserialize;
@@ -20,7 +24,7 @@ lazy_static! {
 
 #[derive(Deserialize)]
 struct Input {
-    input: String
+    input: String,
 }
 
 #[post("/15/nice")]
@@ -38,41 +42,72 @@ async fn vibecheck(input: web::Json<Input>) -> HttpResponse {
 #[post("/15/game")]
 async fn vibecheck_thegame(input: web::Json<Input>) -> HttpResponse {
     let input = &input.input;
-    //rule 1
+    // rule 1
     if input.len() < 8 {
         return HttpResponse::BadRequest().json(json!({"result": "naughty", "reason": "8 chars"}));
     };
-    //rule 2
-    if UPPERCASE_REGEX.find(input).is_none() || LOWERCASE_REGEX.find(input).is_none() || DIGIT_REGEX.find(input).is_none() {
-        return HttpResponse::BadRequest().json(json!({"result": "naughty", "reason": "more types of chars"}));
-    };
-    //rule 3
+
+    // rule 2
+    if UPPERCASE_REGEX.find(input).is_none()
+        || LOWERCASE_REGEX.find(input).is_none()
+        || DIGIT_REGEX.find(input).is_none()
+    {
+        return HttpResponse::BadRequest()
+            .json(json!({"result": "naughty", "reason": "more types of chars"}));
+    }
+
+    // rule 3
     if DIGIT_REGEX.captures_iter(input).count() < 5 {
         return HttpResponse::BadRequest().json(json!({"result": "naughty", "reason": "55555"}));
     }
-    //rule 4
-    if INTEGER_REGEX.captures_iter(input).map(|c| c.at(1).map(|s| s.parse::<i32>().ok()).unwrap_or_default().unwrap_or_default()).sum::<i32>() != 2023 {
-        return HttpResponse::BadRequest().json(json!({"result": "naughty", "reason": "math is hard"}));
+
+    // rule 4
+    if INTEGER_REGEX
+        .captures_iter(input)
+        .map(|c| {
+            c.at(1)
+                .map(|s| s.parse::<i32>().ok())
+                .unwrap_or_default()
+                .unwrap_or_default()
+        })
+        .sum::<i32>()
+        != 2023
+    {
+        return HttpResponse::BadRequest()
+            .json(json!({"result": "naughty", "reason": "math is hard"}));
     }
+
     // rule 5
-    if JOY_REGEX.find(input).is_none() || input.matches('j').count() != 1 || input.matches('o').count() != 1 || input.matches('y').count() != 1 {
-        return HttpResponse::NotAcceptable().json(json!({"result": "naughty", "reason": "not joyful enough"}));
+    if JOY_REGEX.find(input).is_none()
+        || input.matches('j').count() != 1
+        || input.matches('o').count() != 1
+        || input.matches('y').count() != 1
+    {
+        return HttpResponse::NotAcceptable()
+            .json(json!({"result": "naughty", "reason": "not joyful enough"}));
     }
-    //rule 6
+
+    // rule 6
     if SANDWICH_REGEX.find(input).is_none() {
-        return HttpResponse::UnavailableForLegalReasons().json(json!({"result": "naughty", "reason": "illegal: no sandwich"}));
-    };
-    //rule 7
-    if UNICODE_REGEX.find(input).is_none() {
-        return HttpResponse::RangeNotSatisfiable().json(json!({"result": "naughty", "reason": "outranged"}));
+        return HttpResponse::UnavailableForLegalReasons()
+            .json(json!({"result": "naughty", "reason": "illegal: no sandwich"}));
     }
-    //rule 8
+
+    // rule 7
+    if UNICODE_REGEX.find(input).is_none() {
+        return HttpResponse::RangeNotSatisfiable()
+            .json(json!({"result": "naughty", "reason": "outranged"}));
+    }
+
+    // rule 8
     if !input.chars().filter(|c| !c.is_alphanumeric()).any(is_emoji) {
         return HttpResponse::UpgradeRequired().json(json!({"result": "naughty", "reason": "😳"}));
     }
-    //rule 9
+
+    // rule 9
     if !sha256::digest(input).ends_with('a') {
-        return HttpResponse::ImATeapot().json(json!({"result": "naughty", "reason": "not a coffee brewer"}));
+        return HttpResponse::ImATeapot()
+            .json(json!({"result": "naughty", "reason": "not a coffee brewer"}));
     }
 
     HttpResponse::Ok().json(json!({"result": "nice", "reason": "that's a nice password"}))
