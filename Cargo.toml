@@ -25,3 +25,5 @@ uuid = { version = "1", features = ["serde"] }
 chrono = { version = "0.4", features = ["clock"] }
 mime = "0.3"
 askama = "0.12"
+unic-emoji = "0.9"
+sha256 = "1"
