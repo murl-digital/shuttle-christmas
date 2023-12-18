@@ -66,8 +66,7 @@ async fn vibecheck_thegame(input: web::Json<Input>) -> HttpResponse {
         .captures_iter(input)
         .map(|c| {
             c.at(1)
-                .map(|s| s.parse::<i32>().ok())
-                .unwrap_or_default()
+                .map(|s| s.parse::<i32>().unwrap_or(0))
                 .unwrap_or_default()
         })
         .sum::<i32>()

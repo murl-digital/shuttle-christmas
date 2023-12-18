@@ -2,22 +2,15 @@ use actix_web::{
     error::ErrorInternalServerError,
     get, post,
     web::{self, ServiceConfig},
-    Error, HttpResponse, Result,
+    HttpResponse, Result,
 };
-use serde::Deserialize;
 use serde_json::json;
-use sqlx::{PgPool, QueryBuilder};
+use sqlx::PgPool;
 
-#[derive(Deserialize)]
-struct Order {
-    id: i32,
-    region_id: i32,
-    gift_name: String,
-    quantity: i32,
-}
+use crate::orders::{save_orders, Order};
 
 #[get("/13/sql")]
-async fn sql(pool: web::Data<PgPool>) -> Result<String, Error> {
+async fn sql(pool: web::Data<PgPool>) -> Result<String> {
     let sql = sqlx::query!("SELECT 20231213 as output")
         .fetch_one(pool.get_ref())
         .await
@@ -30,7 +23,7 @@ async fn sql(pool: web::Data<PgPool>) -> Result<String, Error> {
 }
 
 #[post("/13/reset")]
-async fn reset(pool: web::Data<PgPool>) -> Result<HttpResponse, Error> {
+async fn reset(pool: web::Data<PgPool>) -> Result<HttpResponse> {
     sqlx::query!(
         r#"
         DROP TABLE IF EXISTS orders;
@@ -61,21 +54,7 @@ async fn add_orders(
     pool: web::Data<PgPool>,
     orders: web::Json<Vec<Order>>,
 ) -> Result<HttpResponse> {
-    let mut query_builder =
-        QueryBuilder::new("INSERT INTO orders (id, region_id, gift_name, quantity)");
-
-    query_builder.push_values(orders.0, |mut b, order| {
-        b.push_bind(order.id)
-            .push_bind(order.region_id)
-            .push_bind(order.gift_name)
-            .push_bind(order.quantity);
-    });
-
-    let query = query_builder.build();
-    query
-        .execute(pool.as_ref())
-        .await
-        .map_err(ErrorInternalServerError)?;
+    save_orders(orders.into_inner(), &pool).await?;
 
     Ok(HttpResponse::Ok().finish())
 }

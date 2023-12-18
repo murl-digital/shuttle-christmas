@@ -653,6 +653,7 @@ dependencies = [
  "base64",
  "chrono",
  "image",
+ "itertools 0.12.0",
  "lazy_static",
  "mime",
  "onig",
