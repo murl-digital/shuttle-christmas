@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use actix_web::{
     get,
     web::{self, ServiceConfig},
@@ -10,12 +12,14 @@ use day13::day13;
 use day14::day14;
 use day15::day15;
 use day18::day18;
+use day19::{day19, Day19State};
 use day4::day4;
 use day6::day6;
 use day7::day7;
 use day8::day8;
 use shuttle_actix_web::ShuttleActixWeb;
 use sqlx::PgPool;
+use tokio::sync::Mutex;
 
 mod orders;
 
@@ -26,6 +30,7 @@ mod day13;
 mod day14;
 mod day15;
 mod day18;
+mod day19;
 mod day4;
 mod day6;
 mod day7;
@@ -45,6 +50,7 @@ async fn die() -> HttpResponse {
 async fn main(
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+    let data = web::Data::new(Day19State { rooms: Mutex::new(HashMap::new()), views: Default::default() });
     let config = move |cfg: &mut ServiceConfig| {
         cfg.app_data(web::Data::new(pool));
         cfg.service(hello_world);
@@ -60,6 +66,7 @@ async fn main(
         day14(cfg);
         day15(cfg);
         day18(cfg);
+        day19(cfg, data);
     };
 
     Ok(config.into())
